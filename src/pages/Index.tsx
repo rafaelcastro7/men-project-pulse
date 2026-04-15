@@ -1,16 +1,40 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useCallback } from "react";
+import AppSidebar from "@/components/AppSidebar";
+import ScheduleCalendar from "@/components/ScheduleCalendar";
+import EmployeeDashboard from "@/components/EmployeeDashboard";
+import { asignacionesIniciales, Asignacion } from "@/data/scheduling";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
+  const [currentView, setCurrentView] = useState<"schedule" | "dashboard">("schedule");
+  const [asignaciones, setAsignaciones] = useState<Asignacion[]>(asignacionesIniciales);
+
+  const handleAddAssignment = useCallback((a: Omit<Asignacion, "id">) => {
+    setAsignaciones((prev) => [
+      ...prev,
+      { ...a, id: `${a.colaboradorId}-${a.fecha}-${Date.now()}` },
+    ]);
+  }, []);
+
+  const handleRemoveAssignment = useCallback((id: string) => {
+    setAsignaciones((prev) => prev.filter((a) => a.id !== id));
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="flex min-h-screen bg-background">
+      <AppSidebar currentView={currentView} onViewChange={setCurrentView} />
+      <main className="flex-1 p-6 lg:p-8 overflow-auto">
+        {currentView === "schedule" ? (
+          <ScheduleCalendar
+            asignaciones={asignaciones}
+            onAddAssignment={handleAddAssignment}
+            onRemoveAssignment={handleRemoveAssignment}
+          />
+        ) : (
+          <EmployeeDashboard asignaciones={asignaciones} />
+        )}
+      </main>
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
