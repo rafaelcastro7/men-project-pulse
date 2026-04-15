@@ -18,9 +18,24 @@ export interface Asignacion {
   fecha: string; // YYYY-MM-DD
 }
 
-export const HORAS_JORNADA = 8;
-export const HORAS_ALMUERZO = 1;
-export const HORAS_EFECTIVAS = HORAS_JORNADA - HORAS_ALMUERZO;
+export const HORAS_JORNADA_LV = 8; // Lunes a Viernes
+export const HORAS_ALMUERZO = 1;   // Solo L-V
+export const HORAS_EFECTIVAS_LV = HORAS_JORNADA_LV + HORAS_ALMUERZO; // 9h total en obra L-V
+export const HORAS_SABADO = 4;     // Sábado sin almuerzo
+
+/** Horas normales según día de la semana (0=Dom, 6=Sáb) */
+export function getHorasNormales(dayOfWeek: number): number {
+  if (dayOfWeek === 0) return 0; // Domingo
+  if (dayOfWeek === 6) return HORAS_SABADO; // Sábado
+  return HORAS_JORNADA_LV; // L-V (8h trabajo, almuerzo aparte)
+}
+
+/** Horas totales en obra (incluye almuerzo L-V) */
+export function getHorasTotalEnObra(dayOfWeek: number): number {
+  if (dayOfWeek === 0) return 0;
+  if (dayOfWeek === 6) return HORAS_SABADO;
+  return HORAS_JORNADA_LV + HORAS_ALMUERZO; // 9h en obra
+}
 
 export const proyectos: Proyecto[] = [
   { id: "novaterra", nombre: "NOVATERRA", color: "bg-project-novaterra" },
