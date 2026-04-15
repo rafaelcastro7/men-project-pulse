@@ -1,4 +1,5 @@
-import { Calendar, Users, LayoutDashboard, Building2 } from "lucide-react";
+import { Calendar, Users, LayoutDashboard } from "lucide-react";
+import menLogo from "@/assets/men-logo.png";
 
 interface AppSidebarProps {
   currentView: "schedule" | "dashboard";
@@ -9,16 +10,8 @@ const AppSidebar = ({ currentView, onViewChange }: AppSidebarProps) => {
   return (
     <aside className="w-64 min-h-screen bg-primary text-primary-foreground flex flex-col">
       {/* Logo area */}
-      <div className="px-6 py-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-accent-foreground" />
-          </div>
-          <div>
-            <h1 className="font-heading text-lg font-bold tracking-tight">MEN</h1>
-            <p className="text-xs opacity-70 font-body">INGENIERÍA S.A.S.</p>
-          </div>
-        </div>
+      <div className="px-6 py-5 border-b border-sidebar-border flex items-center justify-center">
+        <img src={menLogo} alt="Men Ingeniería S.A.S." className="h-14 w-auto brightness-0 invert" />
       </div>
 
       {/* Navigation */}
