@@ -10,7 +10,10 @@ import {
   DESCANSO_ID,
   getProjectColor,
   getProjectName,
-  HORAS_EFECTIVAS,
+  getHorasNormales,
+  HORAS_JORNADA_LV,
+  HORAS_ALMUERZO,
+  HORAS_SABADO,
 } from "@/data/scheduling";
 import AssignmentDialog from "./AssignmentDialog";
 
@@ -44,10 +47,15 @@ const ScheduleCalendar = ({ asignaciones, onAddAssignment, onRemoveAssignment }:
   const totalHorasByColab = useMemo(() => {
     const totals: Record<string, number> = {};
     colaboradores.forEach((c) => {
-      const count = asignaciones.filter(
-        (a) => a.colaboradorId === c.id && days.some((d) => d.toISOString().split("T")[0] === a.fecha)
-      ).length;
-      totals[c.id] = count * HORAS_EFECTIVAS;
+      let horas = 0;
+      asignaciones.forEach((a) => {
+        if (a.colaboradorId !== c.id) return;
+        const matchDay = days.find((d) => d.toISOString().split("T")[0] === a.fecha);
+        if (matchDay) {
+          horas += getHorasNormales(matchDay.getDay());
+        }
+      });
+      totals[c.id] = horas;
     });
     return totals;
   }, [asignaciones, days]);
@@ -183,7 +191,7 @@ const ScheduleCalendar = ({ asignaciones, onAddAssignment, onRemoveAssignment }:
 
       {/* Hours note */}
       <p className="text-xs text-muted-foreground mt-3 text-right">
-        * Jornada de {8}h — 1h almuerzo = <strong>{HORAS_EFECTIVAS}h efectivas</strong> por día
+        * L-V: {HORAS_JORNADA_LV}h trabajo + {HORAS_ALMUERZO}h almuerzo | Sáb: {HORAS_SABADO}h | Tiempo adicional = <strong>horas extra</strong>
       </p>
 
       {/* Assignment Dialog */}

@@ -8,9 +8,10 @@ import {
   Asignacion,
   getProjectName,
   getProjectColor,
-  HORAS_EFECTIVAS,
-  HORAS_JORNADA,
+  getHorasNormales,
+  HORAS_JORNADA_LV,
   HORAS_ALMUERZO,
+  HORAS_SABADO,
   proyectos,
 } from "@/data/scheduling";
 import {
@@ -48,13 +49,19 @@ const EmployeeDashboard = ({ asignaciones }: EmployeeDashboardProps) => {
     [colabAssignments, monthStart, monthEnd]
   );
 
-  const totalHorasMes = monthAssignments.length * HORAS_EFECTIVAS;
+  const totalHorasMes = useMemo(() => {
+    return monthAssignments.reduce((sum, a) => {
+      const d = new Date(a.fecha);
+      return sum + getHorasNormales(d.getDay());
+    }, 0);
+  }, [monthAssignments]);
   const diasTrabajados = monthAssignments.length;
 
   const horasPorProyecto = useMemo(() => {
     const map: Record<string, number> = {};
     monthAssignments.forEach((a) => {
-      map[a.proyectoId] = (map[a.proyectoId] || 0) + HORAS_EFECTIVAS;
+      const d = new Date(a.fecha);
+      map[a.proyectoId] = (map[a.proyectoId] || 0) + getHorasNormales(d.getDay());
     });
     return Object.entries(map)
       .map(([id, horas]) => ({ id, nombre: getProjectName(id), horas, color: getProjectColor(id) }))
@@ -66,11 +73,16 @@ const EmployeeDashboard = ({ asignaciones }: EmployeeDashboardProps) => {
   // Calendar mini
   const weekStart = startOfWeek(monthStart, { weekStartsOn: 1 });
 
+  const diasLV = useMemo(() => monthAssignments.filter(a => {
+    const d = new Date(a.fecha).getDay();
+    return d >= 1 && d <= 5;
+  }).length, [monthAssignments]);
+
   const stats = [
-    { icon: Clock, label: "Horas Efectivas", value: `${totalHorasMes}h`, desc: `de ${diasTrabajados * HORAS_JORNADA}h jornada` },
+    { icon: Clock, label: "Horas Trabajo", value: `${totalHorasMes}h`, desc: `L-V: ${HORAS_JORNADA_LV}h | Sáb: ${HORAS_SABADO}h` },
     { icon: CalendarDays, label: "Días Trabajados", value: `${diasTrabajados}`, desc: `en ${format(now, "MMMM", { locale: es })}` },
     { icon: Briefcase, label: "Proyectos Activos", value: `${horasPorProyecto.length}`, desc: "asignados este mes" },
-    { icon: TrendingUp, label: "Almuerzo Descontado", value: `${diasTrabajados * HORAS_ALMUERZO}h`, desc: `${HORAS_ALMUERZO}h × ${diasTrabajados} días` },
+    { icon: TrendingUp, label: "Almuerzo (L-V)", value: `${diasLV * HORAS_ALMUERZO}h`, desc: `${HORAS_ALMUERZO}h × ${diasLV} días L-V` },
   ];
 
   return (
